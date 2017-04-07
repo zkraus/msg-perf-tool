@@ -55,6 +55,11 @@ void sender_start(const vmsl_t *vmsl, const options_t *options) {
 	register uint64_t round = 0;
 	time_t last_calc = 0;
 
+  useconds_t idle_usec = 0;
+  if (options->throttle) {
+    idle_usec = 1000000 / options->throttle;
+  }
+
 	statistics_throughput_header(stat_io);
 	while (can_continue(options, sent)) {
 		vmsl_stat_t ret = vmsl->send(msg_ctxt, content_loader, &status);
@@ -79,10 +84,13 @@ void sender_start(const vmsl_t *vmsl, const options_t *options) {
 
 		if (options->throttle > 0) {
 			round++;
+      /*
 			if (round == options->throttle) {
 				usleep(1000000 - last.tv_usec);
 				round = 0;
 			}
+      */
+      usleep(idle_usec);
 		}
 	}
 
