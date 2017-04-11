@@ -71,3 +71,20 @@ void set_options_object(options_t *obj) {
 const options_t *get_options_object(void) {
 	return options;
 }
+
+/*
+ * options_sprintf_path()
+ * if path contains '%d', then it will apply sprintf using index.
+ * expanding the path name to multiple queues
+*/
+void options_sprintf_path(options_t *obj, uint16_t index) {
+    fprintf(stderr, "kokotina\n");
+	    /* uri expansion */
+	char *old_path = obj->uri.path;
+
+	obj->uri.path = malloc(sizeof(char) * ( strlen(old_path) + 8 ));
+
+    sprintf(obj->uri.path, "%s-%d", old_path, index);
+	printf("%s\n", obj->uri.path);
+	free(old_path);
+}

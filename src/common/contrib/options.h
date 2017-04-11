@@ -60,6 +60,8 @@ void options_set_defaults(options_t *ret);
 void set_options_object(options_t *ojb);
 const options_t *get_options_object(void);
 
+void options_sprintf_path(options_t *obj, uint16_t index);
+
 #ifdef __cplusplus
 }
 #endif
