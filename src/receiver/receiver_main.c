@@ -146,6 +146,8 @@ int main(int argc, char **argv) {
 						&status);
 				}
 
+				options_sprintf_path(options, i);
+
 				receiver_start(&vmsl, options);
 				goto success_exit;
 			} else {

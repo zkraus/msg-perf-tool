@@ -92,6 +92,7 @@ int perf_main(int argc, char **argv) {
 
 		switch (c) {
 			case 'b':
+				printf("%s\n", optarg);
 				options->uri = gru_uri_parse(optarg, &status);
 				if (gru_status_error(&status)) {
 					fprintf(stderr, "%s", status.message);
@@ -180,7 +181,7 @@ int perf_main(int argc, char **argv) {
 						goto err_exit;
 					}
 				}
-
+				options_sprintf_path(options, i);
 				sender_start(&vmsl, options);
 				goto success_exit;
 			} else {
@@ -215,6 +216,8 @@ int perf_main(int argc, char **argv) {
 #ifdef LINUX_BUILD
 		probe_scheduler_start(&status);
 #endif // LINUX_BUILD
+
+		options_sprintf_path(options, 1);
 		sender_start(&vmsl, options);
 
 #ifdef LINUX_BUILD
