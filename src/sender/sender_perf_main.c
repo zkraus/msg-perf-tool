@@ -34,6 +34,8 @@ static void show_help(char **argv) {
 	gru_cli_option_help("no-probles", "N", "disable probes");
 	gru_cli_option_help(
 		"parallel-count", "p", "number of parallel connections to the broker");
+	gru_cli_option_help(
+			"parallel-ratio", "P", "number of parallel connections per one address (default =parallel-count)");
 
 	gru_cli_option_help("size", "s", "message size (in bytes)");
 	gru_cli_option_help("throttle",
@@ -72,10 +74,12 @@ int perf_main(int argc, char **argv) {
 
 	while (1) {
 
-		static struct option long_options[] = {{"broker-url", true, 0, 'b'},
+		static struct option long_options[] = {
+			{"broker-url", true, 0, 'b'},
 			{"count", true, 0, 'c'},
 			{"log-level", true, 0, 'l'},
 			{"parallel-count", true, 0, 'p'},
+			{"parallel-ratio", true, 0, 'P'},
 			{"duration", true, 0, 'd'},
 			{"size", true, 0, 's'},
 			{"log-dir", true, 0, 'L'},
@@ -85,7 +89,7 @@ int perf_main(int argc, char **argv) {
 			{"help", false, 0, 'h'},
 			{0, 0, 0, 0}};
 
-		c = getopt_long(argc, argv, "b:c:l:p:d:s:L:t:DNh", long_options, &option_index);
+		c = getopt_long(argc, argv, "b:c:l:p:P:d:s:L:t:DNh", long_options, &option_index);
 		if (c == -1) {
 			break;
 		}
@@ -108,6 +112,9 @@ int perf_main(int argc, char **argv) {
 				break;
 			case 'p':
 				options->parallel_count = (uint16_t) atoi(optarg);
+				break;
+			case 'P':
+				options->parallel_ratio = (uint16_t) atoi(optarg);
 				break;
 			case 'd':
 				options->duration = gru_duration_from_minutes(atoi(optarg));
@@ -218,7 +225,7 @@ int perf_main(int argc, char **argv) {
 		probe_scheduler_start(&status);
 #endif // LINUX_BUILD
 
-		options_sprintf_path(options, 1);
+		options_sprintf_path(options, 0);
 		sender_start(&vmsl, options);
 
 #ifdef LINUX_BUILD

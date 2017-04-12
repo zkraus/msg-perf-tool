@@ -31,6 +31,8 @@ static void show_help(char **argv) {
 		"log-dir", "L", "a directory to save the logs (mandatory for --daemon)");
 	gru_cli_option_help(
 		"parallel-count", "p", "number of parallel connections to the broker");
+	gru_cli_option_help(
+		"parallel-ratio", "P", "number of parallel connections per one address (default =parallel-count)");
 
 	gru_cli_option_help("size", "s", "message size (in bytes)");
 }
@@ -67,17 +69,19 @@ int main(int argc, char **argv) {
 	options->parallel_count = 1;
 	while (1) {
 
-		static struct option long_options[] = {{"broker-url", true, 0, 'b'},
+		static struct option long_options[] = {
+			{"broker-url", true, 0, 'b'},
 			{"duration", true, 0, 'd'},
 			{"log-level", true, 0, 'l'},
 			{"parallel-count", true, 0, 'p'},
+			{"parallel-ratio", true, 0, 'P'},
 			{"message-size", true, 0, 's'},
 			{"log-dir", true, 0, 'L'},
 			{"daemon", false, 0, 'D'},
 			{"help", false, 0, 'h'},
 			{0, 0, 0, 0}};
 
-		c = getopt_long(argc, argv, "b:d:l:p:s:c:L:Dh", long_options, &option_index);
+		c = getopt_long(argc, argv, "b:d:l:p:P:s:c:L:Dh", long_options, &option_index);
 		if (c == -1) {
 			break;
 		}
@@ -99,6 +103,9 @@ int main(int argc, char **argv) {
 				break;
 			case 'p':
 				options->parallel_count = (uint16_t) atoi(optarg);
+				break;
+			case 'P':
+				options->parallel_ratio = (uint16_t) atoi(optarg);
 				break;
 			case 's':
 				options->message_size = atoll(optarg);
@@ -174,6 +181,7 @@ int main(int argc, char **argv) {
 			remap_log(options->logdir, "mpt-receiver", 0, getpid(), stderr, &status);
 		}
 
+		options_sprintf_path(options, 0);
 		logger(INFO, "Starting test");
 		receiver_start(&vmsl, options);
 	}
