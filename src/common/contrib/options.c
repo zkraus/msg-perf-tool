@@ -78,13 +78,18 @@ const options_t *get_options_object(void) {
  * expanding the path name to multiple queues
 */
 void options_sprintf_path(options_t *obj, uint16_t index) {
-    fprintf(stderr, "kokotina\n");
 	    /* uri expansion */
-	char *old_path = obj->uri.path;
+	if (options->parallel_ratio <= 0) {
+		return;
+	}
 
+	char *old_path = obj->uri.path;
 	obj->uri.path = malloc(sizeof(char) * ( strlen(old_path) + 8 ));
 
-    sprintf(obj->uri.path, "%s-%d", old_path, index);
+	/* categorizing clients per address if there is a ratio */
+	index = index/options->parallel_ratio;
+
+	sprintf(obj->uri.path, "%s-%d", old_path, index);
 	printf("%s\n", obj->uri.path);
 	free(old_path);
 }

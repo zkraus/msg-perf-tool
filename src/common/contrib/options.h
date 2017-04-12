@@ -41,6 +41,7 @@ typedef struct options_t_ {
 	uint64_t count;
 	char logdir[OPT_MAX_STR_SIZE];
 	uint16_t parallel_count;
+	uint16_t parallel_ratio;
 	size_t message_size;
 	log_level_t log_level;
 	gru_duration_t duration;
