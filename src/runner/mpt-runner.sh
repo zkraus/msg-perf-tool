@@ -7,7 +7,7 @@ export EXTRA_SENDER_ARGS=""
 
 app_path=`dirname $0`
 
-ARGS=$(getopt -o l:b:d:c:C:s:p:qu:r:o:n:Nt:T:R:h -n "$0" -- "$@");
+ARGS=$(getopt -o l:b:d:c:C:s:p:P:qu:r:o:n:Nt:T:R:h -n "$0" -- "$@");
 eval set -- "$ARGS";
 
 HELP="USAGE: ./$0 [options]\n
@@ -18,6 +18,7 @@ HELP="USAGE: ./$0 [options]\n
 -C 'config'  -- loader configuration\n
 -s 'size'  -- message size (in bytes [default = 1024])\n
 -p 'parallel count'  -- the number of parallel senders and consumers\n
+-P 'parallel ratio'  -- the number of clients per address\n
 -q 'quiet'  -- quiet mode\n
 -u 'database url'  -- (optional) a URL for the elastic database that stores the test data\n
 -o 'output directory'  -- output directory for the test report\n
@@ -63,6 +64,11 @@ while true; do
     -p)
       shift
       export PARALLEL_COUNT="$1"
+      shift
+    ;;
+    -P)
+      shift
+      export PARALLEL_RATIO="$1"
       shift
     ;;
     -q)
@@ -198,10 +204,10 @@ fi
 
 function run_by_duration() {
   echo "Lauching the receiver"
-  export pid_receiver=`${app_path}/mpt-receiver -b ${BROKER_URL} --log-level=STAT --duration=${DURATION/[m|s|h]/} -p ${PARALLEL_COUNT} --log-dir=${LOG_DIR}/${TEST_RUN} -s ${MESSAGE_SIZE} --daemon`
+  export pid_receiver=`${app_path}/mpt-receiver -b ${BROKER_URL} --log-level=STAT --duration=${DURATION/[m|s|h]/} -p ${PARALLEL_COUNT} ${PARALLEL_RATIO:+-P ${PARALLEL_RATIO}} --log-dir=${LOG_DIR}/${TEST_RUN} -s ${MESSAGE_SIZE} --daemon`
 
   echo "Lauching the sender"
-  export pid_sender=`${app_path}/mpt-sender perf -b ${BROKER_URL} -t ${THROTTLE} --log-level=STAT --duration ${DURATION/[m|s|h]/} -p ${PARALLEL_COUNT} --log-dir=${LOG_DIR}/${TEST_RUN} -s ${MESSAGE_SIZE} --daemon ${EXTRA_SENDER_ARGS}`
+  export pid_sender=`${app_path}/mpt-sender perf -b ${BROKER_URL} -t ${THROTTLE} --log-level=STAT --duration ${DURATION/[m|s|h]/} -p ${PARALLEL_COUNT} ${PARALLEL_RATIO:+-P ${PARALLEL_RATIO}} --log-dir=${LOG_DIR}/${TEST_RUN} -s ${MESSAGE_SIZE} --daemon ${EXTRA_SENDER_ARGS}`
 
 
   # Sleeps for a little longer than the test duration so that it gives some time
@@ -214,14 +220,14 @@ function run_by_duration() {
 
 function run_by_count() {
   echo "Lauching the receiver "
-  export pid_receiver=`${app_path}/mpt-receiver -b ${BROKER_URL} --log-level=STAT -p ${PARALLEL_COUNT} --log-dir=${LOG_DIR}/${TEST_RUN} -s ${MESSAGE_SIZE} --daemon`
+  export pid_receiver=`${app_path}/mpt-receiver -b ${BROKER_URL} --log-level=STAT -p ${PARALLEL_COUNT} ${PARALLEL_RATIO:+-P ${PARALLEL_RATIO}} --log-dir=${LOG_DIR}/${TEST_RUN} -s ${MESSAGE_SIZE} --daemon`
   if [[ -z "${pid_receiver}" ]] ; then
     echo "Invalid PID for the receiver: ${pid_receiver}"
     exit 1
   fi
 
   echo "Lauching the sender and waiting for it to send ${COUNT} messages"
-  export pid_sender=`${app_path}/mpt-sender perf -b ${BROKER_URL} -t ${THROTTLE} --log-level=STAT --count ${COUNT} -p ${PARALLEL_COUNT} --log-dir=${LOG_DIR}/${TEST_RUN} -s ${MESSAGE_SIZE} --daemon`
+  export pid_sender=`${app_path}/mpt-sender perf -b ${BROKER_URL} -t ${THROTTLE} --log-level=STAT --count ${COUNT} -p ${PARALLEL_COUNT} ${PARALLEL_RATIO:+-P ${PARALLEL_RATIO}} --log-dir=${LOG_DIR}/${TEST_RUN} -s ${MESSAGE_SIZE} --daemon`
   if [[ -z "${pid_sender}" ]] ; then
     echo "Invalid PID for the sender: ${pid_sender}"
     exit 1
