@@ -220,8 +220,8 @@ static void proton_set_message_properties(
 	pn_message_set_address(message, url);
 
 	// OPT_TODO: must be a configuration
-	pn_message_set_durable(message, false);
-	pn_message_set_ttl(message, 1000);
+	pn_message_set_durable(message, true);
+	pn_message_set_ttl(message, 50000);
 
 	pn_message_set_creation_time(message, proton_now(status));
 }
